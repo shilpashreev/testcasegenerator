@@ -29,3 +29,6 @@ test_cases/*.xlsx
 Thumbs.db
 .vscode/
 .idea/
+
+# Claude Code local config
+.claude/
