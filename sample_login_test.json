@@ -1,0 +1,51 @@
+{
+  "id": "AUTH-205",
+  "summary": "User Login — Email & Password Authentication",
+  "type": "Story",
+  "status": "Ready for QA",
+  "priority": "High",
+  "updated": "2026-05-24T10:00:00",
+  "description": "As a registered user, I want to log in to the application using my email address and password so that I can access my personal dashboard and perform authorized actions.\n\nLogin page UI requirements:\n- Email address input field (type='email', required)\n- Password input field (type='password', masked, required)\n- 'Show/Hide Password' toggle button\n- 'Remember Me' checkbox (unchecked by default)\n- 'Forgot Password?' link that redirects to /password-reset\n- 'Login' submit button (disabled until both fields are non-empty)\n- Loading spinner shown during authentication\n- Social login buttons: 'Continue with Google', 'Continue with Microsoft'\n\nAuthentication rules:\n- Email must match standard RFC 5322 format\n- Password: minimum 8 characters, maximum 128 characters\n- Passwords are case-sensitive\n- Trim leading/trailing whitespace from email before validation; do NOT trim password\n- Lock account after 5 consecutive failed attempts within a 15-minute window\n- Implement rate limiting: max 10 login requests per minute per IP address\n- All login traffic must occur over HTTPS (TLS 1.2+); redirect HTTP to HTTPS\n- Return generic error message — never reveal whether the email exists\n\nSession management:\n- 'Remember Me' checked: persist session for 30 days via HTTP-only, Secure, SameSite=Strict JWT cookie\n- 'Remember Me' unchecked: session expires after 30 minutes of inactivity\n- On successful login, redirect to the page the user originally requested (returnUrl), defaulting to /dashboard\n- Invalidate any existing session tokens on new login\n- Multi-device support: a new login does NOT invalidate sessions on other devices",
+  "acceptance_criteria": [
+    "User logs in successfully with valid registered email and correct password and is redirected to /dashboard",
+    "User is redirected to the originally requested URL (returnUrl) after successful login",
+    "System displays 'Invalid email or password. Please try again.' for wrong credentials without revealing which field is incorrect",
+    "Login button is disabled until both email and password fields contain at least one character",
+    "Email field rejects input that is not a valid email format and shows inline validation error 'Please enter a valid email address'",
+    "Password field masks characters; Show/Hide toggle reveals and hides the password text",
+    "Account is locked after 5 consecutive failed login attempts within 15 minutes; subsequent attempts show 'Your account has been locked. Please contact support or wait 15 minutes.'",
+    "Failed attempt counter resets to 0 on a successful login",
+    "Selecting 'Remember Me' keeps the user logged in for 30 days via a secure HTTP-only cookie",
+    "Without 'Remember Me', the session expires after 30 minutes of inactivity and the user is redirected to /login",
+    "Navigating to the app over HTTP redirects to HTTPS",
+    "A loading spinner is shown from the moment the user clicks Login until the response is received",
+    "Login page and all auth endpoints respond within 2 seconds under normal load",
+    "Rate limiter blocks IPs sending more than 10 login requests per minute; returns HTTP 429",
+    "Login works correctly on Chrome, Firefox, Edge, and Safari on both desktop and mobile viewports (320 px wide and above)",
+    "Keyboard navigation: all form elements are reachable via Tab; form submits on Enter",
+    "Screen-reader accessible: all inputs have associated labels; error messages are announced via aria-live"
+  ],
+  "subtasks": [
+    {
+      "id": "AUTH-206",
+      "summary": "Implement email + password validation on login form",
+      "status": "Done"
+    },
+    {
+      "id": "AUTH-207",
+      "summary": "Implement account lockout after 5 failed attempts",
+      "status": "In Progress"
+    },
+    {
+      "id": "AUTH-208",
+      "summary": "Implement Remember Me / session expiry logic",
+      "status": "To Do"
+    }
+  ],
+  "attachments": [
+    {
+      "filename": "login_technical_spec.txt",
+      "content": "Technical Specifications — Login Module v2.1\n\nEmail validation: RFC 5322; strip leading/trailing whitespace before check\nPassword constraints: min 8 chars, max 128 chars, case-sensitive, no whitespace trimming\nHashing algorithm: bcrypt with cost factor 12\nFailed attempt tracking: Redis counter keyed by (email + IP); TTL 15 minutes; incremented on every 401\nAccount lockout: counter >= 5 → lock flag set in DB; unlock requires support action OR 15-min TTL expiry\nJWT: RS256 signed, 15-minute access token + 30-day refresh token (Remember Me) or 30-minute refresh (no Remember Me)\nCookie flags: HttpOnly, Secure, SameSite=Strict\nSession storage: access token in memory only (never localStorage); refresh token in HTTP-only cookie\nHTTPS: enforce via HSTS header (max-age=31536000; includeSubDomains)\nRate limiting: Nginx limit_req_zone, 10 r/m per IP; returns 429 with Retry-After header\nError messages: never differentiate between unknown email and wrong password\nReturnUrl handling: validate returnUrl against allowlist of internal paths; reject absolute URLs to prevent open redirect\nMFA: out of scope for this story"
+    }
+  ]
+}

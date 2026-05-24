@@ -1,0 +1,25 @@
+{
+  "id": "PROJ-101",
+  "summary": "User Login and Authentication",
+  "type": "Story",
+  "status": "In Progress",
+  "updated": "2024-05-10T09:00:00",
+  "description": "As a registered user, I want to log in to the application using my email address and password so that I can access my personal dashboard.\n\nThe login page must include:\n- An email address input field\n- A password input field (characters must be masked)\n- A 'Remember Me' checkbox\n- A 'Forgot Password' link that navigates to the password reset flow\n- A 'Login' submit button\n\nAuthentication behaviour:\n- Validate that the email follows standard email format (e.g., user@example.com)\n- Password must be at least 8 characters\n- Lock the account after 5 consecutive failed login attempts\n- Display appropriate error messages for invalid credentials without revealing which field is wrong",
+  "acceptance_criteria": [
+    "User can log in successfully with a valid registered email and correct password",
+    "System displays a generic error message 'Invalid email or password' for wrong credentials",
+    "Account is locked after 5 consecutive failed login attempts",
+    "Locked account displays message: 'Your account has been locked. Contact support to unlock.'",
+    "Selecting 'Remember Me' keeps the session active for 30 days via a secure HTTP-only cookie",
+    "Session expires automatically after 30 minutes of inactivity when 'Remember Me' is not checked",
+    "Password field masks all characters during input",
+    "Login page is accessible over HTTPS only",
+    "Login works correctly on Chrome, Firefox, and Safari (desktop and mobile)"
+  ],
+  "attachments": [
+    {
+      "filename": "login_technical_spec.txt",
+      "content": "Technical Specifications - Login Module\n\nEmail validation: RFC 5322 standard\nPassword constraints: minimum 8 characters, maximum 128 characters\nFailed attempt counter: resets to 0 on successful login\nLocked account unlock: requires manual intervention by support team\nRemember Me: sets a JWT with 30-day expiry in an HTTP-only, Secure, SameSite=Strict cookie\nSession token: stored in memory (not localStorage); expires after 30 minutes of inactivity\nAll authentication endpoints must use TLS 1.2 or higher\nError messages must not reveal whether email exists in the system\nRate limiting: max 10 login requests per minute per IP"
+    }
+  ]
+}
